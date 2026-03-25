@@ -33,13 +33,13 @@ function getPeriodKey(dateString) {
   };
 }
 
-function createIssue(date, link, type) {
+function createIssue(date, link, type, elapsedSeconds = 0) {
   return {
     id: Date.now() + Math.random(),
     date,
     link,
     type,
-    elapsedSeconds: 0,
+    elapsedSeconds,
     status: "Aguardando",
     startedAt: null,
     completedAt: null,
@@ -90,10 +90,16 @@ function calculatePeriodStats(items, periodName) {
   };
 }
 
+function parseTimeToSeconds(time) {
+  const [h, m, s] = (time || "").split(":").map(Number);
+  return (h || 0) * 3600 + (m || 0) * 60 + (s || 0);
+}
+
 export default function Page() {
   const [date, setDate] = useState(getToday());
   const [link, setLink] = useState("");
   const [type, setType] = useState("Teste");
+  const [manualMinutes, setManualMinutes] = useState("");
   const [tick, setTick] = useState(Date.now());
 
   const [issues, setIssues] = useState(() => {
@@ -155,9 +161,23 @@ export default function Page() {
   function handleAddIssue() {
     if (!link.trim()) return;
 
+    const minutes = Number(manualMinutes) || 0;
+    const manualSeconds = Math.max(0, minutes * 60);
+
     setIssues((current) => {
       const paused = pauseRunningIssues(current);
-      const nextIssue = createIssue(date, link.trim(), type);
+      const nextIssue = createIssue(date, link.trim(), type, manualSeconds);
+
+      if (manualSeconds > 0) {
+        return [
+          {
+            ...nextIssue,
+            status: "Pausada",
+            startedAt: null,
+          },
+          ...paused,
+        ];
+      }
 
       return [
         {
@@ -171,6 +191,7 @@ export default function Page() {
 
     setLink("");
     setType("Teste");
+    setManualMinutes("");
   }
 
   function handleStart(id) {
@@ -245,6 +266,26 @@ export default function Page() {
 
   function handleDelete(id) {
     setIssues((current) => current.filter((issue) => issue.id !== id));
+  }
+
+  function handleEditTime(id) {
+    const novoTempo = prompt("Digite o tempo (HH:MM:SS):");
+    if (!novoTempo) return;
+
+    const segundos = parseTimeToSeconds(novoTempo);
+
+    setIssues((current) =>
+      current.map((issue) =>
+        issue.id === id
+          ? {
+              ...issue,
+              elapsedSeconds: segundos,
+              startedAt: null,
+              status: "Pausada",
+            }
+          : issue
+      )
+    );
   }
 
   const activeIssues = issuesWithLiveTime.filter(
@@ -366,11 +407,12 @@ export default function Page() {
             {chip("Envio rápido")}
           </div>
 
-          <div className="new-issue-grid">
+          <div className="new-issue-grid new-issue-grid-extended">
             <input
               value={date}
               onChange={(e) => setDate(e.target.value)}
               className="field"
+              placeholder="Data"
             />
 
             <input
@@ -388,6 +430,15 @@ export default function Page() {
               <option>Teste</option>
               <option>Reteste</option>
             </select>
+
+            <input
+              type="number"
+              min="0"
+              value={manualMinutes}
+              onChange={(e) => setManualMinutes(e.target.value)}
+              className="field"
+              placeholder="Tempo (min)"
+            />
 
             <button onClick={handleAddIssue} className="btn btn-primary">
               Enviar
@@ -483,6 +534,14 @@ export default function Page() {
                           title="Encerrar"
                         >
                           ⛔
+                        </button>
+
+                        <button
+                          onClick={() => handleEditTime(issue.id)}
+                          className="btn"
+                          title="Editar tempo"
+                        >
+                          ✏️
                         </button>
 
                         <button
@@ -609,6 +668,14 @@ export default function Page() {
                       </div>
 
                       <div className="issue-actions">
+                        <button
+                          onClick={() => handleEditTime(issue.id)}
+                          className="btn"
+                          title="Editar tempo"
+                        >
+                          ✏️
+                        </button>
+
                         <button
                           onClick={() => handleDelete(issue.id)}
                           className="btn btn-delete"

@@ -109,8 +109,13 @@ body {
 /* FORM */
 .new-issue-grid {
   display: grid;
-  grid-template-columns: 140px 1fr 140px 120px;
+  grid-template-columns: 140px 1fr 140px 140px 120px;
   gap: 10px;
+}
+
+.new-issue-grid-extended .field,
+.new-issue-grid-extended .btn {
+  width: 100%;
 }
 
 .field {
@@ -190,7 +195,7 @@ body {
 .issue-grid {
   display: grid;
   gap: 16px;
-  grid-template-columns: 120px minmax(0, 1fr) 120px 160px 170px;
+  grid-template-columns: 120px minmax(0, 1fr) 120px 160px 210px;
   align-items: center;
 }
 
