@@ -1,1 +1,0 @@
-# apontamentos-app
