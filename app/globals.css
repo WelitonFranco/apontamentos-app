@@ -338,10 +338,16 @@ body {
 }
 
 /* OVERALL */
-.overall-grid {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 10px;
+.overall-card {
+  background: #eef5ef;
+  padding: 14px;
+  border-radius: 12px;
+  text-align: center;
+  transition: transform 0.2s;
+}
+
+.overall-card:hover {
+  transform: translateY(-2px);
 }
 
 .overall-card {
