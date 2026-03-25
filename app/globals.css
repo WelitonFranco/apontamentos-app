@@ -301,7 +301,7 @@ body {
 .dashboard-panels {
   display: grid;
   grid-template-columns: 1fr 1fr;
-  gap: 15px;
+  gap: 30px;
 }
 
 .dashboard-panel {
