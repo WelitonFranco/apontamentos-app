@@ -1,8 +1,8 @@
 import "./globals.css";
 
 export const metadata = {
-  title: "Apontamentos App",
-  description: "Projeto iniciado do zero"
+  title: "QA Timer - Apontamentos",
+  description: "Controle de tempo por issue",
 };
 
 export default function RootLayout({ children }) {
