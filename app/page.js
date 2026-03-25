@@ -539,7 +539,8 @@ export default function Page() {
                       </div>
 
                       <div className="issue-time-box">
-    
+        
+
                         {editingTimeId === issue.id ? (
                           <div className="time-inline-editor">
                             <input
@@ -724,6 +725,7 @@ export default function Page() {
                       </div>
 
                       <div className="issue-time-box">
+
                         {editingTimeId === issue.id ? (
                           <div className="time-inline-editor">
                             <input
