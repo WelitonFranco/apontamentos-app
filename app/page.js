@@ -724,8 +724,6 @@ export default function Page() {
                       </div>
 
                       <div className="issue-time-box">
-                        <p className="mini-label">Tempo final</p>
-
                         {editingTimeId === issue.id ? (
                           <div className="time-inline-editor">
                             <input
