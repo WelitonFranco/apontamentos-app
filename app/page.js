@@ -98,6 +98,7 @@ export default function Page() {
 
   const [issues, setIssues] = useState(() => {
     if (typeof window === "undefined") return [];
+
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
       return raw ? JSON.parse(raw) : [];
@@ -128,7 +129,8 @@ export default function Page() {
 
       return {
         ...issue,
-        displaySeconds: (issue.elapsedSeconds || 0) + Math.max(0, runningSeconds),
+        displaySeconds:
+          (issue.elapsedSeconds || 0) + Math.max(0, runningSeconds),
       };
     });
   }, [issues, tick]);
@@ -137,6 +139,7 @@ export default function Page() {
     return currentIssues.map((issue) => {
       if (issue.status === "Em andamento" && issue.startedAt) {
         const extra = Math.floor((now - issue.startedAt) / 1000);
+
         return {
           ...issue,
           elapsedSeconds: issue.elapsedSeconds + Math.max(0, extra),
@@ -144,6 +147,7 @@ export default function Page() {
           status: "Pausada",
         };
       }
+
       return issue;
     });
   }
@@ -192,8 +196,13 @@ export default function Page() {
       const now = Date.now();
 
       return current.map((issue) => {
-        if (issue.id === id && issue.status === "Em andamento" && issue.startedAt) {
+        if (
+          issue.id === id &&
+          issue.status === "Em andamento" &&
+          issue.startedAt
+        ) {
           const extra = Math.floor((now - issue.startedAt) / 1000);
+
           return {
             ...issue,
             elapsedSeconds: issue.elapsedSeconds + Math.max(0, extra),
@@ -217,7 +226,10 @@ export default function Page() {
         let finalSeconds = issue.elapsedSeconds || 0;
 
         if (issue.status === "Em andamento" && issue.startedAt) {
-          finalSeconds += Math.max(0, Math.floor((now - issue.startedAt) / 1000));
+          finalSeconds += Math.max(
+            0,
+            Math.floor((now - issue.startedAt) / 1000)
+          );
         }
 
         return {
@@ -260,7 +272,9 @@ export default function Page() {
     : 0;
 
   const allTests = issuesWithLiveTime.filter((issue) => issue.type === "Teste");
-  const allRetests = issuesWithLiveTime.filter((issue) => issue.type === "Reteste");
+  const allRetests = issuesWithLiveTime.filter(
+    (issue) => issue.type === "Reteste"
+  );
 
   const testStats = {
     day: {
@@ -418,12 +432,18 @@ export default function Page() {
 
                       <div className="issue-main">
                         <p className="mini-label">Issue</p>
-                        <p className="issue-title-line">{issueLabel}</p>
-                        <p className="issue-link">{issue.link}</p>
+                        <p
+                          className="issue-title-line ellipsis"
+                          title={issueLabel}
+                        >
+                          {issueLabel}
+                        </p>
+                        <p className="issue-link ellipsis" title={issue.link}>
+                          {issue.link}
+                        </p>
                       </div>
 
-                      <div className="issue-type-box">
-                        <p className="mini-label mobile-only">Tipo</p>
+                      <div>
                         <span
                           className={`tag ${
                             issue.type === "Teste" ? "tag-test" : "tag-retest"
@@ -433,7 +453,7 @@ export default function Page() {
                         </span>
                       </div>
 
-                      <div className="issue-time-box">
+                      <div>
                         <p className="mini-label">Tempo</p>
                         <p className="timer-text">
                           {formatDuration(issue.displaySeconds)}
@@ -444,24 +464,31 @@ export default function Page() {
                         <button
                           onClick={() => handleStart(issue.id)}
                           className="btn btn-start"
+                          title="Iniciar"
                         >
                           ▶
                         </button>
+
                         <button
                           onClick={() => handlePause(issue.id)}
                           className="btn btn-pause"
+                          title="Pausar"
                         >
                           ⏸
                         </button>
+
                         <button
                           onClick={() => handleFinish(issue.id)}
                           className="btn btn-stop"
+                          title="Encerrar"
                         >
                           ⛔
                         </button>
+
                         <button
                           onClick={() => handleDelete(issue.id)}
                           className="btn btn-delete"
+                          title="Excluir"
                         >
                           🗑
                         </button>
@@ -483,16 +510,16 @@ export default function Page() {
           ))}
         </section>
 
-        <section className="card dashboard-card">
+        <section className="card">
           <div className="section-header">
-            <h2 className="dashboard-title">Dashboard</h2>
+            <h2 className="section-title">Dashboard</h2>
             {chip("Visão geral")}
           </div>
 
           <div className="dashboard-panels">
             <div className="dashboard-panel">
               <div className="section-header">
-                <h3 className="panel-title">Teste</h3>
+                <h3 className="section-title">Teste</h3>
                 {chip("Desempenho")}
               </div>
               {renderPeriodRows(testStats)}
@@ -500,7 +527,7 @@ export default function Page() {
 
             <div className="dashboard-panel">
               <div className="section-header">
-                <h3 className="panel-title panel-title-muted">Reteste</h3>
+                <h3 className="section-title">Reteste</h3>
                 {chip("Desempenho")}
               </div>
               {renderPeriodRows(retestStats)}
@@ -535,9 +562,7 @@ export default function Page() {
 
           <div className="issues-list">
             {finishedIssues.length === 0 ? (
-              <div className="empty-box">
-                Ainda não há issues encerradas.
-              </div>
+              <div className="empty-box">Ainda não há issues encerradas.</div>
             ) : (
               finishedIssues.map((issue) => {
                 const issueId = extractIssueId(issue.link);
@@ -546,42 +571,52 @@ export default function Page() {
                   : getDomainLabel(issue.link);
 
                 return (
-                  <div key={issue.id} className="finished-issue-card">
-                    <div>
-                      <p className="mini-label">Data</p>
-                      <p className="issue-text-strong">{issue.date}</p>
-                    </div>
+                  <div key={issue.id} className="issue-card">
+                    <div className="issue-grid">
+                      <div>
+                        <p className="mini-label">Data</p>
+                        <p className="issue-text-strong">{issue.date}</p>
+                      </div>
 
-                    <div className="issue-main">
-                      <p className="mini-label">Issue</p>
-                      <p className="issue-title-line">{issueLabel}</p>
-                      <p className="issue-link">{issue.link}</p>
-                    </div>
+                      <div className="issue-main">
+                        <p className="mini-label">Issue</p>
+                        <p
+                          className="issue-title-line ellipsis"
+                          title={issueLabel}
+                        >
+                          {issueLabel}
+                        </p>
+                        <p className="issue-link ellipsis" title={issue.link}>
+                          {issue.link}
+                        </p>
+                      </div>
 
-                    <div className="finished-type">
-                      <span
-                        className={`tag ${
-                          issue.type === "Teste" ? "tag-test" : "tag-retest"
-                        }`}
-                      >
-                        {issue.type}
-                      </span>
-                    </div>
+                      <div>
+                        <span
+                          className={`tag ${
+                            issue.type === "Teste" ? "tag-test" : "tag-retest"
+                          }`}
+                        >
+                          {issue.type}
+                        </span>
+                      </div>
 
-                    <div className="finished-time">
-                      <p className="mini-label">Tempo final</p>
-                      <p className="timer-text">
-                        {formatDuration(issue.displaySeconds)}
-                      </p>
-                    </div>
+                      <div>
+                        <p className="mini-label">Tempo final</p>
+                        <p className="timer-text">
+                          {formatDuration(issue.displaySeconds)}
+                        </p>
+                      </div>
 
-                    <div className="finished-actions">
-                      <button
-                        onClick={() => handleDelete(issue.id)}
-                        className="btn btn-delete"
-                      >
-                        🗑
-                      </button>
+                      <div className="issue-actions">
+                        <button
+                          onClick={() => handleDelete(issue.id)}
+                          className="btn btn-delete"
+                          title="Excluir"
+                        >
+                          🗑
+                        </button>
+                      </div>
                     </div>
                   </div>
                 );

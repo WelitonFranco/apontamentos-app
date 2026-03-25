@@ -1,3 +1,4 @@
+/* RESET */
 * {
   box-sizing: border-box;
   margin: 0;
@@ -5,47 +6,44 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
-html,
-body {
+html, body {
   min-height: 100%;
 }
 
+/* BACKGROUND */
 body {
   background: linear-gradient(135deg, #2f6f4f, #3a7a58, #2f6f4f);
   color: #1f2937;
 }
 
-button,
-input,
-select {
-  font: inherit;
-}
-
+/* LAYOUT */
 .page-bg {
   min-height: 100vh;
-  padding: 16px;
+  padding: 20px;
 }
 
 .app-shell {
-  width: 100%;
   max-width: 1200px;
   margin: 0 auto;
   background: #f6f8f4;
   border-radius: 28px;
-  box-shadow: 0 30px 80px rgba(0, 0, 0, 0.25);
-  padding: 16px;
+  padding: 20px;
+  box-shadow: 0 20px 60px rgba(0,0,0,0.2);
 }
 
+/* HEADER */
 .topbar {
   display: flex;
-  flex-direction: column;
-  gap: 12px;
-  margin-bottom: 24px;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 25px;
+  flex-wrap: wrap;
+  gap: 10px;
 }
 
 .page-title {
-  font-size: 28px;
-  font-weight: 700;
+  font-size: 30px;
+  font-weight: bold;
   color: #2f6f4f;
 }
 
@@ -55,229 +53,181 @@ select {
   margin-top: 4px;
 }
 
-.topbar-badges {
-  display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
-}
-
+/* BADGES */
 .topbar-badge {
-  background: #ffffff;
-  color: #6b705c;
-  padding: 10px 14px;
-  border-radius: 12px;
-  box-shadow: 0 1px 4px rgba(0, 0, 0, 0.08);
-  font-size: 14px;
+  background: white;
+  padding: 8px 12px;
+  border-radius: 10px;
+  font-size: 13px;
 }
 
 .topbar-badge-strong {
+  font-weight: bold;
   color: #2f6f4f;
-  font-weight: 700;
 }
 
+/* CARD */
 .card {
-  background: #ffffff;
+  background: white;
   border-radius: 20px;
   padding: 20px;
-  box-shadow: 0 2px 10px rgba(0, 0, 0, 0.06);
-  border: 1px solid rgba(0, 0, 0, 0.04);
   margin-bottom: 20px;
 }
 
+/* SECTION */
 .section-header {
   display: flex;
-  align-items: center;
   justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 16px;
-  flex-wrap: wrap;
-}
-
-.section-title,
-.dashboard-title {
-  font-size: 18px;
-  font-weight: 700;
-  color: #2f6f4f;
-}
-
-.panel-title {
-  font-size: 16px;
-  font-weight: 700;
-  color: #2f6f4f;
-}
-
-.panel-title-muted {
-  color: #6b705c;
-}
-
-.chip {
-  display: inline-flex;
   align-items: center;
-  border-radius: 999px;
+  margin-bottom: 15px;
+}
+
+.section-title {
+  font-size: 18px;
+  font-weight: bold;
+  color: #2f6f4f;
+}
+
+/* CHIP */
+.chip {
   background: #e6f2ec;
   color: #2f6f4f;
-  padding: 6px 12px;
+  padding: 5px 10px;
+  border-radius: 20px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: bold;
 }
 
+/* FORM */
 .new-issue-grid {
   display: grid;
-  gap: 12px;
-  grid-template-columns: 1fr;
+  grid-template-columns: 140px 1fr 140px 120px;
+  gap: 10px;
 }
 
 .field {
-  height: 44px;
-  border-radius: 12px;
-  border: 1px solid #d6dbe1;
-  background: #ffffff;
-  padding: 0 14px;
-  outline: none;
+  height: 42px;
+  border-radius: 10px;
+  border: 1px solid #ccc;
+  padding: 0 10px;
   font-size: 14px;
 }
 
-.field:focus {
-  border-color: #2f6f4f;
-}
-
+/* BUTTONS */
 .btn {
   border: none;
   border-radius: 10px;
-  padding: 10px 14px;
+  padding: 8px 12px;
   cursor: pointer;
-  transition: 0.2s ease;
-  font-weight: 700;
-}
-
-.btn:hover {
-  opacity: 0.92;
+  font-weight: bold;
 }
 
 .btn-primary {
   background: #2f6f4f;
-  color: #ffffff;
-  height: 44px;
+  color: white;
 }
 
-.btn-start {
-  background: #059669;
-  color: #ffffff;
-}
+.btn-start { background: #22c55e; color: white; }
+.btn-pause { background: #facc15; color: white; }
+.btn-stop { background: #ef4444; color: white; }
+.btn-delete { background: #cbd5e1; }
 
-.btn-pause {
-  background: #f59e0b;
-  color: #ffffff;
-}
-
-.btn-stop {
-  background: #e11d48;
-  color: #ffffff;
-}
-
-.btn-delete {
-  background: #cbd5e1;
-  color: #334155;
-}
-
+/* ISSUE LIST */
 .issues-list {
   display: flex;
   flex-direction: column;
   gap: 12px;
 }
 
-.empty-box {
-  border: 1px dashed #cbd5e1;
-  border-radius: 14px;
-  padding: 24px;
-  text-align: center;
-  color: #64748b;
-  background: #fafafa;
-}
-
+/* ISSUE CARD */
 .issue-card {
-  border: 1px solid #dbe2e8;
-  border-radius: 18px;
-  padding: 16px;
-  background: #ffffff;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.04);
+  border: 1px solid #ddd;
+  border-radius: 16px;
+  padding: 15px;
+  background: white;
 }
 
+/* STATUS */
 .issue-running {
-  border-color: #4ade80;
   background: #ecfdf5;
+  border-color: #4ade80;
 }
 
 .issue-paused {
-  border-color: #facc15;
   background: #fffbeb;
+  border-color: #facc15;
 }
 
+/* GRID */
 .issue-grid {
   display: grid;
   gap: 16px;
-  grid-template-columns: 1fr;
+  grid-template-columns: 120px minmax(0,1fr) 120px 160px 170px;
+  align-items: center;
 }
 
+/* 🔥 ESSENCIAL PRA ELLIPSIS FUNCIONAR */
 .issue-main {
   min-width: 0;
 }
 
+/* TEXTOS */
 .mini-label {
   font-size: 10px;
-  text-transform: uppercase;
-  letter-spacing: 0.08em;
   color: #94a3b8;
+  text-transform: uppercase;
   margin-bottom: 4px;
-}
-
-.mobile-only {
-  display: block;
-}
-
-.issue-text-strong {
-  font-weight: 600;
-  color: #334155;
 }
 
 .issue-title-line {
   font-size: 14px;
-  font-weight: 700;
-  color: #334155;
-  word-break: break-word;
+  font-weight: bold;
 }
 
 .issue-link {
   font-size: 12px;
   color: #64748b;
-  margin-top: 6px;
-  word-break: break-all;
 }
 
-.issue-type-box,
-.issue-time-box {
-  text-align: left;
+/* 🔥 ELLIPSIS (o que tu queria) */
+.ellipsis {
+  display: block;
+  max-width: 100%;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.issue-actions {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 8px;
-}
-
+/* TIMER */
 .timer-text {
   font-family: monospace;
-  font-size: 26px;
-  font-weight: 700;
+  font-size: 22px;
+  font-weight: bold;
   color: #2f6f4f;
 }
 
+/* ACTIONS */
+.issue-actions {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* EMPTY STATE */
+.empty-box {
+  border: 1px dashed #ccc;
+  border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  color: #666;
+}
+
+/* TAGS */
 .tag {
-  display: inline-flex;
-  padding: 6px 10px;
+  padding: 4px 8px;
   border-radius: 999px;
   font-size: 12px;
-  font-weight: 700;
+  font-weight: bold;
 }
 
 .tag-test {
@@ -290,195 +240,19 @@ select {
   color: #b45309;
 }
 
-.stats-grid {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: 1fr;
-  margin-bottom: 20px;
-}
+/* RESPONSIVO */
+@media (max-width: 900px) {
 
-.stat-card {
-  background: #ffffff;
-  border-radius: 18px;
-  padding: 16px;
-  text-align: center;
-  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
-}
-
-.stat-label {
-  font-size: 12px;
-  text-transform: uppercase;
-  letter-spacing: 0.06em;
-  color: #94a3b8;
-}
-
-.stat-value {
-  margin-top: 8px;
-  font-size: 28px;
-  font-weight: 700;
-  color: #2f6f4f;
-}
-
-.dashboard-card {
-  display: flex;
-  flex-direction: column;
-  gap: 16px;
-}
-
-.dashboard-panels {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: 1fr;
-}
-
-.dashboard-panel {
-  background: #eef5ef;
-  border-radius: 18px;
-  padding: 16px;
-}
-
-.period-row {
-  display: grid;
-  grid-template-columns: 1fr auto auto;
-  gap: 12px;
-  align-items: center;
-  padding: 10px 0;
-  border-bottom: 1px solid #dce4dd;
-}
-
-.period-row:last-child {
-  border-bottom: none;
-}
-
-.period-label {
-  color: #64748b;
-}
-
-.period-value {
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.period-time {
-  font-size: 13px;
-  color: #64748b;
-}
-
-.overall-grid {
-  display: grid;
-  gap: 12px;
-  grid-template-columns: 1fr 1fr;
-}
-
-.overall-card {
-  background: #eef5ef;
-  border-radius: 14px;
-  padding: 14px;
-  text-align: center;
-}
-
-.overall-label {
-  font-size: 12px;
-  color: #94a3b8;
-}
-
-.overall-value {
-  font-size: 24px;
-  font-weight: 700;
-  color: #2f6f4f;
-  margin-top: 6px;
-}
-
-.overall-time {
-  font-size: 12px;
-  color: #64748b;
-  margin-top: 4px;
-}
-
-.finished-issue-card {
-  display: grid;
-  gap: 16px;
-  grid-template-columns: 1fr;
-  align-items: center;
-  border: 1px solid #dbe2e8;
-  border-radius: 14px;
-  padding: 14px;
-  background: #ffffff;
-  box-shadow: 0 1px 5px rgba(0, 0, 0, 0.04);
-}
-
-.finished-type,
-.finished-time,
-.finished-actions {
-  text-align: left;
-}
-
-@media (min-width: 768px) {
-  .page-bg {
-    padding: 24px;
-  }
-
-  .app-shell {
-    padding: 24px;
-  }
-
-  .topbar {
-    flex-direction: row;
-    align-items: center;
-    justify-content: space-between;
-  }
-
-  .page-title {
-    font-size: 34px;
+  .issue-grid {
+    grid-template-columns: 1fr;
   }
 
   .new-issue-grid {
-    grid-template-columns: 140px 1fr 140px 120px;
+    grid-template-columns: 1fr;
   }
 
-  .stats-grid {
-    grid-template-columns: repeat(5, 1fr);
-  }
-
-  .dashboard-panels {
-    grid-template-columns: 1fr 1fr;
-  }
-
-  .overall-grid {
-    grid-template-columns: repeat(4, 1fr);
-  }
-
-  .finished-issue-card {
-    grid-template-columns: 120px minmax(0, 1fr) 120px 140px 80px;
-  }
-
-  .finished-type,
-  .finished-time {
-    text-align: center;
-  }
-
-  .finished-actions {
-    display: flex;
-    justify-content: flex-end;
-  }
-}
-
-@media (min-width: 1024px) {
-  .issue-grid {
-    grid-template-columns: 120px minmax(0, 1fr) 130px 160px 170px;
-    align-items: center;
-  }
-
-  .issue-type-box,
-  .issue-time-box {
-    text-align: center;
-  }
-
-  .issue-actions {
-    justify-content: flex-end;
-  }
-
-  .mobile-only {
-    display: none;
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
