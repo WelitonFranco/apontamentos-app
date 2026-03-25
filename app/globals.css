@@ -6,6 +6,11 @@
   font-family: Arial, Helvetica, sans-serif;
 }
 
+html,
+body {
+  min-height: 100%;
+}
+
 body {
   background: linear-gradient(135deg, #2f6f4f, #3a7a58, #2f6f4f);
   color: #1f2937;
@@ -23,18 +28,21 @@ body {
   background: #f6f8f4;
   border-radius: 28px;
   padding: 20px;
+  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
 }
 
 /* HEADER */
 .topbar {
   display: flex;
   justify-content: space-between;
-  margin-bottom: 20px;
+  align-items: center;
+  margin-bottom: 25px;
   flex-wrap: wrap;
+  gap: 10px;
 }
 
 .page-title {
-  font-size: 28px;
+  font-size: 30px;
   font-weight: bold;
   color: #2f6f4f;
 }
@@ -42,17 +50,21 @@ body {
 .page-subtitle {
   font-size: 14px;
   color: #6b705c;
+  margin-top: 4px;
 }
 
+/* BADGES */
 .topbar-badges {
   display: flex;
   gap: 8px;
+  flex-wrap: wrap;
 }
 
 .topbar-badge {
   background: white;
   padding: 8px 12px;
   border-radius: 10px;
+  font-size: 13px;
 }
 
 .topbar-badge-strong {
@@ -68,17 +80,20 @@ body {
   margin-bottom: 20px;
 }
 
-/* TITLES */
+/* SECTION */
+.section-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 15px;
+  gap: 10px;
+  flex-wrap: wrap;
+}
+
 .section-title {
   font-size: 18px;
   font-weight: bold;
   color: #2f6f4f;
-}
-
-.section-header {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 15px;
 }
 
 /* CHIP */
@@ -88,6 +103,7 @@ body {
   padding: 5px 10px;
   border-radius: 20px;
   font-size: 12px;
+  font-weight: bold;
 }
 
 /* FORM */
@@ -98,18 +114,26 @@ body {
 }
 
 .field {
-  height: 40px;
-  padding: 0 10px;
+  height: 42px;
   border-radius: 10px;
   border: 1px solid #ccc;
+  padding: 0 10px;
+  font-size: 14px;
+  background: #fff;
 }
 
-/* BUTTON */
+/* BUTTONS */
 .btn {
   border: none;
   border-radius: 10px;
   padding: 8px 12px;
   cursor: pointer;
+  font-weight: bold;
+  transition: opacity 0.2s ease;
+}
+
+.btn:hover {
+  opacity: 0.92;
 }
 
 .btn-primary {
@@ -117,10 +141,25 @@ body {
   color: white;
 }
 
-.btn-start { background: #22c55e; color: white; }
-.btn-pause { background: #facc15; color: white; }
-.btn-stop { background: #ef4444; color: white; }
-.btn-delete { background: #cbd5e1; }
+.btn-start {
+  background: #22c55e;
+  color: white;
+}
+
+.btn-pause {
+  background: #facc15;
+  color: white;
+}
+
+.btn-stop {
+  background: #ef4444;
+  color: white;
+}
+
+.btn-delete {
+  background: #cbd5e1;
+  color: #334155;
+}
 
 /* ISSUE LIST */
 .issues-list {
@@ -132,11 +171,11 @@ body {
 /* ISSUE CARD */
 .issue-card {
   border: 1px solid #ddd;
-  border-radius: 14px;
-  padding: 12px;
+  border-radius: 16px;
+  padding: 15px;
+  background: white;
 }
 
-/* STATUS */
 .issue-running {
   background: #ecfdf5;
   border-color: #4ade80;
@@ -147,37 +186,47 @@ body {
   border-color: #facc15;
 }
 
-/* GRID */
+/* ISSUE GRID */
 .issue-grid {
   display: grid;
-  grid-template-columns: 120px minmax(0,1fr) 120px 150px 170px;
-  gap: 10px;
+  gap: 16px;
+  grid-template-columns: 120px minmax(0, 1fr) 120px 160px 170px;
   align-items: center;
 }
 
-/* ESSENCIAL */
 .issue-main {
   min-width: 0;
 }
 
-/* TEXT */
+/* TEXTOS */
 .mini-label {
   font-size: 10px;
   color: #94a3b8;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+
+.issue-text-strong {
+  font-weight: 600;
+  color: #334155;
 }
 
 .issue-title-line {
-  font-weight: bold;
   font-size: 14px;
+  font-weight: bold;
+  color: #1f2937;
 }
 
 .issue-link {
   font-size: 12px;
   color: #64748b;
+  margin-top: 4px;
 }
 
-/* 🔥 ELLIPSIS */
+/* ELLIPSIS */
 .ellipsis {
+  display: block;
+  max-width: 100%;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -186,7 +235,7 @@ body {
 /* TIMER */
 .timer-text {
   font-family: monospace;
-  font-size: 20px;
+  font-size: 22px;
   font-weight: bold;
   color: #2f6f4f;
 }
@@ -194,22 +243,26 @@ body {
 /* ACTIONS */
 .issue-actions {
   display: flex;
-  gap: 5px;
+  gap: 6px;
+  flex-wrap: wrap;
 }
 
-/* EMPTY */
+/* EMPTY STATE */
 .empty-box {
-  padding: 20px;
-  text-align: center;
   border: 1px dashed #ccc;
   border-radius: 12px;
+  padding: 20px;
+  text-align: center;
+  color: #666;
 }
 
-/* TAG */
+/* TAGS */
 .tag {
   padding: 4px 8px;
-  border-radius: 20px;
+  border-radius: 999px;
   font-size: 12px;
+  font-weight: bold;
+  display: inline-block;
 }
 
 .tag-test {
@@ -222,7 +275,7 @@ body {
   color: #b45309;
 }
 
-/* 🔥 STATS (ESSA PARTE QUE TAVA QUEBRADA) */
+/* STATS */
 .stats-grid {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
@@ -240,6 +293,7 @@ body {
 .stat-label {
   font-size: 12px;
   color: #94a3b8;
+  margin-bottom: 6px;
 }
 
 .stat-value {
@@ -261,24 +315,35 @@ body {
   border-radius: 12px;
 }
 
-/* PERIOD */
+/* PERIOD ROWS */
 .period-row {
-  display: flex;
-  justify-content: space-between;
-  margin-bottom: 6px;
+  display: grid;
+  grid-template-columns: 1fr 60px 100px;
+  align-items: center;
+  padding: 8px 0;
+  border-bottom: 1px solid #d9e3dc;
+}
+
+.period-row:last-child {
+  border-bottom: none;
 }
 
 .period-label {
+  text-align: left;
   color: #64748b;
 }
 
 .period-value {
+  text-align: center;
   font-weight: bold;
+  color: #1f2937;
 }
 
 .period-time {
-  font-size: 12px;
+  text-align: right;
+  font-family: monospace;
   color: #64748b;
+  font-size: 13px;
 }
 
 /* OVERALL */
@@ -294,6 +359,24 @@ body {
   padding: 10px;
   border-radius: 10px;
   text-align: center;
+}
+
+.overall-label {
+  font-size: 12px;
+  color: #64748b;
+}
+
+.overall-value {
+  font-size: 22px;
+  font-weight: bold;
+  color: #1f2937;
+  margin: 4px 0;
+}
+
+.overall-time {
+  font-size: 13px;
+  color: #64748b;
+  font-family: monospace;
 }
 
 /* RESPONSIVO */
@@ -316,5 +399,10 @@ body {
 
   .overall-grid {
     grid-template-columns: 1fr;
+  }
+
+  .topbar {
+    flex-direction: column;
+    align-items: flex-start;
   }
 }
