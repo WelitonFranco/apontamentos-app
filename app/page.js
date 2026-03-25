@@ -91,8 +91,22 @@ function calculatePeriodStats(items, periodName) {
 }
 
 function parseTimeToSeconds(time) {
-  const [h, m, s] = (time || "").split(":").map(Number);
-  return (h || 0) * 3600 + (m || 0) * 60 + (s || 0);
+  const parts = (time || "").split(":").map(Number);
+
+  if (parts.length !== 3 || parts.some((item) => Number.isNaN(item) || item < 0)) {
+    return 0;
+  }
+
+  const [h, m, s] = parts;
+  return h * 3600 + m * 60 + s;
+}
+
+function secondsToTimeInput(totalSeconds) {
+  const safe = Math.max(0, Math.floor(totalSeconds || 0));
+  const hrs = String(Math.floor(safe / 3600)).padStart(2, "0");
+  const mins = String(Math.floor((safe % 3600) / 60)).padStart(2, "0");
+  const secs = String(safe % 60).padStart(2, "0");
+  return `${hrs}:${mins}:${secs}`;
 }
 
 export default function Page() {
@@ -101,6 +115,9 @@ export default function Page() {
   const [type, setType] = useState("Teste");
   const [manualMinutes, setManualMinutes] = useState("");
   const [tick, setTick] = useState(Date.now());
+
+  const [editingTimeId, setEditingTimeId] = useState(null);
+  const [editingTimeValue, setEditingTimeValue] = useState("");
 
   const [issues, setIssues] = useState(() => {
     if (typeof window === "undefined") return [];
@@ -266,13 +283,27 @@ export default function Page() {
 
   function handleDelete(id) {
     setIssues((current) => current.filter((issue) => issue.id !== id));
+
+    if (editingTimeId === id) {
+      setEditingTimeId(null);
+      setEditingTimeValue("");
+    }
   }
 
-  function handleEditTime(id) {
-    const novoTempo = prompt("Digite o tempo (HH:MM:SS):");
-    if (!novoTempo) return;
+  function handleStartEditTime(issue) {
+    setEditingTimeId(issue.id);
+    setEditingTimeValue(
+      secondsToTimeInput(issue.displaySeconds || issue.elapsedSeconds || 0)
+    );
+  }
 
-    const segundos = parseTimeToSeconds(novoTempo);
+  function handleCancelEditTime() {
+    setEditingTimeId(null);
+    setEditingTimeValue("");
+  }
+
+  function handleSaveEditTime(id) {
+    const segundos = parseTimeToSeconds(editingTimeValue);
 
     setIssues((current) =>
       current.map((issue) =>
@@ -281,11 +312,14 @@ export default function Page() {
               ...issue,
               elapsedSeconds: segundos,
               startedAt: null,
-              status: "Pausada",
+              status: issue.status === "Encerrada" ? "Encerrada" : "Pausada",
             }
           : issue
       )
     );
+
+    setEditingTimeId(null);
+    setEditingTimeValue("");
   }
 
   const activeIssues = issuesWithLiveTime.filter(
@@ -407,7 +441,7 @@ export default function Page() {
             {chip("Envio rápido")}
           </div>
 
-          <div className="new-issue-grid new-issue-grid-extended">
+          <div className="new-issue-grid">
             <input
               value={date}
               onChange={(e) => setDate(e.target.value)}
@@ -504,11 +538,41 @@ export default function Page() {
                         </span>
                       </div>
 
-                      <div>
+                      <div className="issue-time-box">
                         <p className="mini-label">Tempo</p>
-                        <p className="timer-text">
-                          {formatDuration(issue.displaySeconds)}
-                        </p>
+
+                        {editingTimeId === issue.id ? (
+                          <div className="time-inline-editor">
+                            <input
+                              type="text"
+                              value={editingTimeValue}
+                              onChange={(e) => setEditingTimeValue(e.target.value)}
+                              className="time-input"
+                              placeholder="00:00:00"
+                            />
+                            <button
+                              onClick={() => handleSaveEditTime(issue.id)}
+                              className="btn btn-save-time"
+                              title="Salvar tempo"
+                            >
+                              ✔
+                            </button>
+                            <button
+                              onClick={handleCancelEditTime}
+                              className="btn btn-cancel-time"
+                              title="Cancelar edição"
+                            >
+                              ✖
+                            </button>
+                          </div>
+                        ) : (
+                          <p
+                            className="timer-text"
+                            title={formatDuration(issue.displaySeconds)}
+                          >
+                            {formatDuration(issue.displaySeconds)}
+                          </p>
+                        )}
                       </div>
 
                       <div className="issue-actions">
@@ -537,7 +601,7 @@ export default function Page() {
                         </button>
 
                         <button
-                          onClick={() => handleEditTime(issue.id)}
+                          onClick={() => handleStartEditTime(issue)}
                           className="btn"
                           title="Editar tempo"
                         >
@@ -660,16 +724,46 @@ export default function Page() {
                         </span>
                       </div>
 
-                      <div>
+                      <div className="issue-time-box">
                         <p className="mini-label">Tempo final</p>
-                        <p className="timer-text">
-                          {formatDuration(issue.displaySeconds)}
-                        </p>
+
+                        {editingTimeId === issue.id ? (
+                          <div className="time-inline-editor">
+                            <input
+                              type="text"
+                              value={editingTimeValue}
+                              onChange={(e) => setEditingTimeValue(e.target.value)}
+                              className="time-input"
+                              placeholder="00:00:00"
+                            />
+                            <button
+                              onClick={() => handleSaveEditTime(issue.id)}
+                              className="btn btn-save-time"
+                              title="Salvar tempo"
+                            >
+                              ✔
+                            </button>
+                            <button
+                              onClick={handleCancelEditTime}
+                              className="btn btn-cancel-time"
+                              title="Cancelar edição"
+                            >
+                              ✖
+                            </button>
+                          </div>
+                        ) : (
+                          <p
+                            className="timer-text"
+                            title={formatDuration(issue.displaySeconds)}
+                          >
+                            {formatDuration(issue.displaySeconds)}
+                          </p>
+                        )}
                       </div>
 
                       <div className="issue-actions">
                         <button
-                          onClick={() => handleEditTime(issue.id)}
+                          onClick={() => handleStartEditTime(issue)}
                           className="btn"
                           title="Editar tempo"
                         >
