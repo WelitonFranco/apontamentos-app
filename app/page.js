@@ -1,36 +1,36 @@
 "use client";
 
 import { useEffect, useMemo, useState } from "react";
+import {
+  calculatePeriodStats,
+  formatBrDate,
+  formatDuration,
+  getPeriodKey,
+} from "../lib/timeStats";
 
 const STORAGE_KEY = "issue-timer-app-v1";
 
-function formatDuration(seconds) {
-  const safe = Math.max(0, Math.floor(seconds || 0));
+function getToday() {
+  return formatBrDate(new Date());
+}
+
+function parseTimeToSeconds(time) {
+  const parts = (time || "").split(":").map(Number);
+
+  if (parts.length !== 3 || parts.some((item) => Number.isNaN(item) || item < 0)) {
+    return 0;
+  }
+
+  const [h, m, s] = parts;
+  return h * 3600 + m * 60 + s;
+}
+
+function secondsToTimeInput(totalSeconds) {
+  const safe = Math.max(0, Math.floor(totalSeconds || 0));
   const hrs = String(Math.floor(safe / 3600)).padStart(2, "0");
   const mins = String(Math.floor((safe % 3600) / 60)).padStart(2, "0");
   const secs = String(safe % 60).padStart(2, "0");
   return `${hrs}:${mins}:${secs}`;
-}
-
-function getToday() {
-  const now = new Date();
-  const day = String(now.getDate()).padStart(2, "0");
-  const month = String(now.getMonth() + 1).padStart(2, "0");
-  const year = now.getFullYear();
-  return `${day}/${month}/${year}`;
-}
-
-function getPeriodKey(dateString) {
-  const [day, month, year] = dateString.split("/").map(Number);
-  const date = new Date(year, month - 1, day);
-  const quarter = Math.floor(date.getMonth() / 3) + 1;
-
-  return {
-    day: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-    week: `${year}-W${Math.ceil(day / 7)}`,
-    month: `${year}-${String(month).padStart(2, "0")}`,
-    quarter: `${year}-Q${quarter}`,
-  };
 }
 
 function createIssue(date, link, type, elapsedSeconds = 0) {
@@ -66,47 +66,6 @@ function getDomainLabel(url) {
   } catch {
     return "link manual";
   }
-}
-
-function calculatePeriodStats(items, periodName) {
-  const grouped = new Map();
-
-  items.forEach((issue) => {
-    const key = getPeriodKey(issue.date)[periodName];
-    if (!grouped.has(key)) grouped.set(key, []);
-    grouped.get(key).push(issue);
-  });
-
-  const periods = Array.from(grouped.values());
-  const totalIssues = items.length;
-  const totalSeconds = items.reduce(
-    (acc, issue) => acc + (issue.displaySeconds || issue.elapsedSeconds || 0),
-    0
-  );
-
-  return {
-    issues: periods.length ? Math.round(totalIssues / periods.length) : 0,
-    avgTime: totalIssues ? Math.floor(totalSeconds / totalIssues) : 0,
-  };
-}
-
-function parseTimeToSeconds(time) {
-  const parts = (time || "").split(":").map(Number);
-
-  if (parts.length !== 3 || parts.some((item) => Number.isNaN(item) || item < 0)) {
-    return 0;
-  }
-
-  const [h, m, s] = parts;
-  return h * 3600 + m * 60 + s;
-}
-
-function secondsToTimeInput(totalSeconds) {
-  const safe = Math.max(0, Math.floor(totalSeconds || 0));
-  const hrs = String(Math.floor(safe / 3600)).padStart(2, "0");
-  const mins = String(Math.floor((safe % 3600) / 60)).padStart(2, "0");
-  const secs = String(safe % 60).padStart(2, "0");
-  return `${hrs}:${mins}:${secs}`;
 }
 
 export default function Page() {
@@ -330,8 +289,12 @@ export default function Page() {
     (issue) => issue.status === "Encerrada"
   );
 
+  const referenceDate = new Date();
   const today = getToday();
-  const todayIssues = issuesWithLiveTime.filter((issue) => issue.date === today);
+  const todayKey = getPeriodKey(referenceDate).day;
+  const todayIssues = issuesWithLiveTime.filter(
+    (issue) => getPeriodKey(issue.date).day === todayKey
+  );
 
   const totalTodaySeconds = todayIssues.reduce(
     (acc, issue) => acc + issue.displaySeconds,
@@ -361,9 +324,9 @@ export default function Page() {
           )
         : 0,
     },
-    week: calculatePeriodStats(allTests, "week"),
-    month: calculatePeriodStats(allTests, "month"),
-    quarter: calculatePeriodStats(allTests, "quarter"),
+    week: calculatePeriodStats(allTests, "week", referenceDate),
+    month: calculatePeriodStats(allTests, "month", referenceDate),
+    quarter: calculatePeriodStats(allTests, "quarter", referenceDate),
   };
 
   const retestStats = {
@@ -376,9 +339,9 @@ export default function Page() {
           )
         : 0,
     },
-    week: calculatePeriodStats(allRetests, "week"),
-    month: calculatePeriodStats(allRetests, "month"),
-    quarter: calculatePeriodStats(allRetests, "quarter"),
+    week: calculatePeriodStats(allRetests, "week", referenceDate),
+    month: calculatePeriodStats(allRetests, "month", referenceDate),
+    quarter: calculatePeriodStats(allRetests, "quarter", referenceDate),
   };
 
   const overallStats = {
@@ -386,9 +349,9 @@ export default function Page() {
       issues: todayIssues.length,
       avgTime: averageTodaySeconds,
     },
-    week: calculatePeriodStats(issuesWithLiveTime, "week"),
-    month: calculatePeriodStats(issuesWithLiveTime, "month"),
-    quarter: calculatePeriodStats(issuesWithLiveTime, "quarter"),
+    week: calculatePeriodStats(issuesWithLiveTime, "week", referenceDate),
+    month: calculatePeriodStats(issuesWithLiveTime, "month", referenceDate),
+    quarter: calculatePeriodStats(issuesWithLiveTime, "quarter", referenceDate),
   };
 
   const statCards = [
@@ -539,8 +502,6 @@ export default function Page() {
                       </div>
 
                       <div className="issue-time-box">
-        
-
                         {editingTimeId === issue.id ? (
                           <div className="time-inline-editor">
                             <input
@@ -725,7 +686,6 @@ export default function Page() {
                       </div>
 
                       <div className="issue-time-box">
-
                         {editingTimeId === issue.id ? (
                           <div className="time-inline-editor">
                             <input
