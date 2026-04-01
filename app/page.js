@@ -20,17 +20,118 @@ function getToday() {
   return `${day}/${month}/${year}`;
 }
 
+function parseIssueDate(dateString) {
+  if (!dateString || typeof dateString !== "string") return null;
+
+  const normalized = dateString.trim();
+
+  const brMatch = normalized.match(/^(\d{1,2})\/(\d{1,2})\/(\d{4})$/);
+  if (brMatch) {
+    const [, dayStr, monthStr, yearStr] = brMatch;
+    const day = Number(dayStr);
+    const month = Number(monthStr);
+    const year = Number(yearStr);
+    const date = new Date(year, month - 1, day);
+
+    if (
+      date.getFullYear() === year &&
+      date.getMonth() === month - 1 &&
+      date.getDate() === day
+    ) {
+      return date;
+    }
+
+    return null;
+  }
+
+  const parsed = new Date(normalized);
+  return Number.isNaN(parsed.getTime()) ? null : parsed;
+}
+
+function getISOWeekInfo(date) {
+  const utcDate = new Date(
+    Date.UTC(date.getFullYear(), date.getMonth(), date.getDate())
+  );
+  const day = utcDate.getUTCDay() || 7;
+
+  utcDate.setUTCDate(utcDate.getUTCDate() + 4 - day);
+
+  const weekYear = utcDate.getUTCFullYear();
+  const yearStart = new Date(Date.UTC(weekYear, 0, 1));
+  const week = Math.ceil(((utcDate - yearStart) / 86400000 + 1) / 7);
+
+  return { weekYear, week };
+}
+
 function getPeriodKey(dateString) {
-  const [day, month, year] = dateString.split("/").map(Number);
-  const date = new Date(year, month - 1, day);
+  const date = parseIssueDate(dateString);
+
+  if (!date) {
+    return {
+      day: "invalid-date",
+      week: "invalid-date",
+      month: "invalid-date",
+      quarter: "invalid-date",
+    };
+  }
+
+  const day = date.getDate();
+  const month = date.getMonth() + 1;
+  const year = date.getFullYear();
   const quarter = Math.floor(date.getMonth() / 3) + 1;
+  const { weekYear, week } = getISOWeekInfo(date);
 
   return {
-    day: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(2, "0")}`,
-    week: `${year}-W${Math.ceil(day / 7)}`,
+    day: `${year}-${String(month).padStart(2, "0")}-${String(day).padStart(
+      2,
+      "0"
+    )}`,
+    week: `${weekYear}-W${String(week).padStart(2, "0")}`,
     month: `${year}-${String(month).padStart(2, "0")}`,
     quarter: `${year}-Q${quarter}`,
   };
+}
+
+function calculatePeriodStats(items, periodName, referenceDate = new Date()) {
+  const referenceKey = getPeriodKey(
+    `${String(referenceDate.getDate()).padStart(2, "0")}/${String(
+      referenceDate.getMonth() + 1
+    ).padStart(2, "0")}/${referenceDate.getFullYear()}`
+  )[periodName];
+
+  const periodItems = items.filter(
+    (issue) => getPeriodKey(issue.date)[periodName] === referenceKey
+  );
+
+  const totalIssues = periodItems.length;
+  const totalSeconds = periodItems.reduce(
+    (acc, issue) => acc + (issue.displaySeconds || issue.elapsedSeconds || 0),
+    0
+  );
+
+  return {
+    issues: totalIssues,
+    avgTime: totalIssues ? Math.floor(totalSeconds / totalIssues) : 0,
+  };
+}
+
+function parseTimeToSeconds(time) {
+  const parts = (time || "").split(":").map(Number);
+
+  if (parts.length !== 3 || parts.some((item) => Number.isNaN(item) || item < 0)) {
+    return 0;
+  }
+
+  const [h, m, s] = parts;
+  return h * 3600 + m * 60 + s;
+}
+
+function secondsToTimeInput(totalSeconds) {
+  const safe = Math.max(0, Math.floor(totalSeconds || 0));
+  const hrs = String(Math.floor(safe / 3600)).padStart(2, "0");
+  const mins = String(Math.floor((safe % 3600) / 60)).padStart(2, "0");
+  const secs = String(safe % 60).padStart(2, "0");
+  return `${hrs}:${mins}:${secs}`;
 }
 
 function createIssue(date, link, type, elapsedSeconds = 0) {
@@ -66,47 +167,6 @@ function getDomainLabel(url) {
   } catch {
     return "link manual";
   }
-}
-
-function calculatePeriodStats(items, periodName) {
-  const grouped = new Map();
-
-  items.forEach((issue) => {
-    const key = getPeriodKey(issue.date)[periodName];
-    if (!grouped.has(key)) grouped.set(key, []);
-    grouped.get(key).push(issue);
-  });
-
-  const periods = Array.from(grouped.values());
-  const totalIssues = items.length;
-  const totalSeconds = items.reduce(
-    (acc, issue) => acc + (issue.displaySeconds || issue.elapsedSeconds || 0),
-    0
-  );
-
-  return {
-    issues: periods.length ? Math.round(totalIssues / periods.length) : 0,
-    avgTime: totalIssues ? Math.floor(totalSeconds / totalIssues) : 0,
-  };
-}
-
-function parseTimeToSeconds(time) {
-  const parts = (time || "").split(":").map(Number);
-
-  if (parts.length !== 3 || parts.some((item) => Number.isNaN(item) || item < 0)) {
-    return 0;
-  }
-
-  const [h, m, s] = parts;
-  return h * 3600 + m * 60 + s;
-}
-
-function secondsToTimeInput(totalSeconds) {
-  const safe = Math.max(0, Math.floor(totalSeconds || 0));
-  const hrs = String(Math.floor(safe / 3600)).padStart(2, "0");
-  const mins = String(Math.floor((safe % 3600) / 60)).padStart(2, "0");
-  const secs = String(safe % 60).padStart(2, "0");
-  return `${hrs}:${mins}:${secs}`;
 }
 
 export default function Page() {
@@ -351,6 +411,8 @@ export default function Page() {
     (issue) => issue.type === "Reteste"
   );
 
+  const referenceDate = new Date();
+
   const testStats = {
     day: {
       issues: testToday.length,
@@ -361,9 +423,9 @@ export default function Page() {
           )
         : 0,
     },
-    week: calculatePeriodStats(allTests, "week"),
-    month: calculatePeriodStats(allTests, "month"),
-    quarter: calculatePeriodStats(allTests, "quarter"),
+    week: calculatePeriodStats(allTests, "week", referenceDate),
+    month: calculatePeriodStats(allTests, "month", referenceDate),
+    quarter: calculatePeriodStats(allTests, "quarter", referenceDate),
   };
 
   const retestStats = {
@@ -376,9 +438,9 @@ export default function Page() {
           )
         : 0,
     },
-    week: calculatePeriodStats(allRetests, "week"),
-    month: calculatePeriodStats(allRetests, "month"),
-    quarter: calculatePeriodStats(allRetests, "quarter"),
+    week: calculatePeriodStats(allRetests, "week", referenceDate),
+    month: calculatePeriodStats(allRetests, "month", referenceDate),
+    quarter: calculatePeriodStats(allRetests, "quarter", referenceDate),
   };
 
   const overallStats = {
@@ -386,9 +448,9 @@ export default function Page() {
       issues: todayIssues.length,
       avgTime: averageTodaySeconds,
     },
-    week: calculatePeriodStats(issuesWithLiveTime, "week"),
-    month: calculatePeriodStats(issuesWithLiveTime, "month"),
-    quarter: calculatePeriodStats(issuesWithLiveTime, "quarter"),
+    week: calculatePeriodStats(issuesWithLiveTime, "week", referenceDate),
+    month: calculatePeriodStats(issuesWithLiveTime, "month", referenceDate),
+    quarter: calculatePeriodStats(issuesWithLiveTime, "quarter", referenceDate),
   };
 
   const statCards = [
@@ -539,8 +601,6 @@ export default function Page() {
                       </div>
 
                       <div className="issue-time-box">
-        
-
                         {editingTimeId === issue.id ? (
                           <div className="time-inline-editor">
                             <input
@@ -725,7 +785,6 @@ export default function Page() {
                       </div>
 
                       <div className="issue-time-box">
-
                         {editingTimeId === issue.id ? (
                           <div className="time-inline-editor">
                             <input
