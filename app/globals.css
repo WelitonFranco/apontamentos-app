@@ -57,6 +57,7 @@ body {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .topbar-badge {
@@ -68,6 +69,11 @@ body {
 .topbar-badge-strong {
   font-weight: bold;
   color: #2f6f4f;
+}
+
+.report-date-field {
+  width: 165px;
+  height: 36px;
 }
 
 /* CARD */
@@ -124,6 +130,11 @@ body {
   border-radius: 10px;
   padding: 8px 12px;
   cursor: pointer;
+}
+
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 .btn-primary {
@@ -214,6 +225,12 @@ body {
 .issue-title-line {
   font-weight: bold;
   font-size: 14px;
+}
+
+.issue-text-strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
 }
 
 .issue-link {
