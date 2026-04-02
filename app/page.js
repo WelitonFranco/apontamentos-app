@@ -116,14 +116,11 @@ function calculatePeriodStats(items, periodName, referenceDate = new Date()) {
 }
 
 function parseTimeToSeconds(time) {
-  const parts = (time || "").split(":").map(Number);
+  const match = /^(\d{2}):([0-5]\d):([0-5]\d)$/.exec(time || "");
+  if (!match) return 0;
 
-  if (parts.length !== 3 || parts.some((item) => Number.isNaN(item) || item < 0)) {
-    return 0;
-  }
-
-  const [h, m, s] = parts;
-  return h * 3600 + m * 60 + s;
+  const [, h, m, s] = match;
+  return Number(h) * 3600 + Number(m) * 60 + Number(s);
 }
 
 function secondsToTimeInput(totalSeconds) {
@@ -135,8 +132,13 @@ function secondsToTimeInput(totalSeconds) {
 }
 
 function createIssue(date, link, type, elapsedSeconds = 0) {
+  const id =
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`;
+
   return {
-    id: Date.now() + Math.random(),
+    id,
     date,
     link,
     type,
@@ -184,8 +186,12 @@ export default function Page() {
 
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
+      if (!raw) return [];
+
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.error("Erro ao carregar issues do localStorage:", error);
       return [];
     }
   });
@@ -196,7 +202,11 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(issues));
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(issues));
+    } catch (error) {
+      console.error("Erro ao salvar issues no localStorage:", error);
+    }
   }, [issues]);
 
   const issuesWithLiveTime = useMemo(() => {
@@ -237,6 +247,10 @@ export default function Page() {
 
   function handleAddIssue() {
     if (!link.trim()) return;
+    if (!parseIssueDate(date)) {
+      alert("Informe uma data válida no formato DD/MM/AAAA.");
+      return;
+    }
 
     const minutes = Number(manualMinutes) || 0;
     const manualSeconds = Math.max(0, minutes * 60);
@@ -363,6 +377,12 @@ export default function Page() {
   }
 
   function handleSaveEditTime(id) {
+    const isValid = /^(\d{2}):([0-5]\d):([0-5]\d)$/.test(editingTimeValue);
+    if (!isValid) {
+      alert("Informe o tempo no formato HH:MM:SS.");
+      return;
+    }
+
     const segundos = parseTimeToSeconds(editingTimeValue);
 
     setIssues((current) =>
@@ -386,9 +406,9 @@ export default function Page() {
     (issue) => issue.status !== "Encerrada"
   );
 
-  const finishedIssues = issuesWithLiveTime.filter(
-    (issue) => issue.status === "Encerrada"
-  );
+  const finishedIssues = issuesWithLiveTime
+    .filter((issue) => issue.status === "Encerrada")
+    .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
 
   const today = getToday();
   const todayIssues = issuesWithLiveTime.filter((issue) => issue.date === today);
@@ -640,6 +660,7 @@ export default function Page() {
                           onClick={() => handleStart(issue.id)}
                           className="btn btn-start"
                           title="Iniciar"
+                          disabled={issue.status === "Em andamento"}
                         >
                           ▶
                         </button>
@@ -648,6 +669,7 @@ export default function Page() {
                           onClick={() => handlePause(issue.id)}
                           className="btn btn-pause"
                           title="Pausar"
+                          disabled={issue.status !== "Em andamento"}
                         >
                           ⏸
                         </button>
