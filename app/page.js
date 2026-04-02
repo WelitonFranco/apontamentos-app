@@ -20,6 +20,13 @@ function getToday() {
   return `${day}/${month}/${year}`;
 }
 
+function toDateInputValue(date) {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${year}-${month}-${day}`;
+}
+
 function parseIssueDate(dateString) {
   if (!dateString || typeof dateString !== "string") return null;
 
@@ -172,6 +179,7 @@ function getDomainLabel(url) {
 }
 
 export default function Page() {
+  const [reportDate, setReportDate] = useState(new Date());
   const [date, setDate] = useState(getToday());
   const [link, setLink] = useState("");
   const [type, setType] = useState("Teste");
@@ -411,7 +419,16 @@ export default function Page() {
     .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
 
   const today = getToday();
-  const todayIssues = issuesWithLiveTime.filter((issue) => issue.date === today);
+  const referenceDate = reportDate;
+  const reportDayKey = getPeriodKey(
+    `${String(referenceDate.getDate()).padStart(2, "0")}/${String(
+      referenceDate.getMonth() + 1
+    ).padStart(2, "0")}/${referenceDate.getFullYear()}`
+  ).day;
+
+  const todayIssues = issuesWithLiveTime.filter(
+    (issue) => getPeriodKey(issue.date).day === reportDayKey
+  );
 
   const totalTodaySeconds = todayIssues.reduce(
     (acc, issue) => acc + issue.displaySeconds,
@@ -430,8 +447,6 @@ export default function Page() {
   const allRetests = issuesWithLiveTime.filter(
     (issue) => issue.type === "Reteste"
   );
-
-  const referenceDate = new Date();
 
   const testStats = {
     day: {
@@ -513,6 +528,18 @@ export default function Page() {
 
           <div className="topbar-badges">
             <span className="topbar-badge">{today}</span>
+            <input
+              type="date"
+              value={toDateInputValue(reportDate)}
+              onChange={(e) => {
+                const nextDate = new Date(`${e.target.value}T00:00:00`);
+                if (!Number.isNaN(nextDate.getTime())) {
+                  setReportDate(nextDate);
+                }
+              }}
+              className="field report-date-field"
+              title="Data de referência do relatório"
+            />
             <span className="topbar-badge topbar-badge-strong">QA Timer</span>
           </div>
         </div>

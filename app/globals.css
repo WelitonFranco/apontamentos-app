@@ -57,6 +57,7 @@ body {
   display: flex;
   gap: 8px;
   flex-wrap: wrap;
+  align-items: center;
 }
 
 .topbar-badge {
@@ -68,6 +69,11 @@ body {
 .topbar-badge-strong {
   font-weight: bold;
   color: #2f6f4f;
+}
+
+.report-date-field {
+  width: 165px;
+  height: 36px;
 }
 
 /* CARD */
