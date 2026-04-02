@@ -20,6 +20,20 @@ function getToday() {
   return `${day}/${month}/${year}`;
 }
 
+function toDateInputValue(date) {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${year}-${month}-${day}`;
+}
+
+function toBrDate(date) {
+  const day = String(date.getDate()).padStart(2, "0");
+  const month = String(date.getMonth() + 1).padStart(2, "0");
+  const year = date.getFullYear();
+  return `${day}/${month}/${year}`;
+}
+
 function parseIssueDate(dateString) {
   if (!dateString || typeof dateString !== "string") return null;
 
@@ -116,14 +130,11 @@ function calculatePeriodStats(items, periodName, referenceDate = new Date()) {
 }
 
 function parseTimeToSeconds(time) {
-  const parts = (time || "").split(":").map(Number);
+  const match = /^(\d{2}):([0-5]\d):([0-5]\d)$/.exec(time || "");
+  if (!match) return 0;
 
-  if (parts.length !== 3 || parts.some((item) => Number.isNaN(item) || item < 0)) {
-    return 0;
-  }
-
-  const [h, m, s] = parts;
-  return h * 3600 + m * 60 + s;
+  const [, h, m, s] = match;
+  return Number(h) * 3600 + Number(m) * 60 + Number(s);
 }
 
 function secondsToTimeInput(totalSeconds) {
@@ -135,8 +146,13 @@ function secondsToTimeInput(totalSeconds) {
 }
 
 function createIssue(date, link, type, elapsedSeconds = 0) {
+  const id =
+    typeof crypto !== "undefined" && crypto.randomUUID
+      ? crypto.randomUUID()
+      : `${Date.now()}-${Math.random()}`;
+
   return {
-    id: Date.now() + Math.random(),
+    id,
     date,
     link,
     type,
@@ -170,6 +186,7 @@ function getDomainLabel(url) {
 }
 
 export default function Page() {
+  const [reportDate, setReportDate] = useState(() => new Date());
   const [date, setDate] = useState(getToday());
   const [link, setLink] = useState("");
   const [type, setType] = useState("Teste");
@@ -184,8 +201,12 @@ export default function Page() {
 
     try {
       const raw = window.localStorage.getItem(STORAGE_KEY);
-      return raw ? JSON.parse(raw) : [];
-    } catch {
+      if (!raw) return [];
+
+      const parsed = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch (error) {
+      console.error("Erro ao carregar issues do localStorage:", error);
       return [];
     }
   });
@@ -196,7 +217,11 @@ export default function Page() {
   }, []);
 
   useEffect(() => {
-    window.localStorage.setItem(STORAGE_KEY, JSON.stringify(issues));
+    try {
+      window.localStorage.setItem(STORAGE_KEY, JSON.stringify(issues));
+    } catch (error) {
+      console.error("Erro ao salvar issues no localStorage:", error);
+    }
   }, [issues]);
 
   const issuesWithLiveTime = useMemo(() => {
@@ -237,6 +262,10 @@ export default function Page() {
 
   function handleAddIssue() {
     if (!link.trim()) return;
+    if (!parseIssueDate(date)) {
+      alert("Informe uma data válida no formato DD/MM/AAAA.");
+      return;
+    }
 
     const minutes = Number(manualMinutes) || 0;
     const manualSeconds = Math.max(0, minutes * 60);
@@ -363,6 +392,12 @@ export default function Page() {
   }
 
   function handleSaveEditTime(id) {
+    const isValid = /^(\d{2}):([0-5]\d):([0-5]\d)$/.test(editingTimeValue);
+    if (!isValid) {
+      alert("Informe o tempo no formato HH:MM:SS.");
+      return;
+    }
+
     const segundos = parseTimeToSeconds(editingTimeValue);
 
     setIssues((current) =>
@@ -382,16 +417,32 @@ export default function Page() {
     setEditingTimeValue("");
   }
 
+  function handleReportDateChange(value) {
+    const nextDate = new Date(`${value}T00:00:00`);
+    if (Number.isNaN(nextDate.getTime())) return;
+
+    setReportDate(nextDate);
+    setDate(toBrDate(nextDate));
+  }
+
   const activeIssues = issuesWithLiveTime.filter(
     (issue) => issue.status !== "Encerrada"
   );
 
-  const finishedIssues = issuesWithLiveTime.filter(
-    (issue) => issue.status === "Encerrada"
-  );
+  const finishedIssues = issuesWithLiveTime
+    .filter((issue) => issue.status === "Encerrada")
+    .sort((a, b) => (b.completedAt || 0) - (a.completedAt || 0));
 
-  const today = getToday();
-  const todayIssues = issuesWithLiveTime.filter((issue) => issue.date === today);
+  const referenceDate = reportDate;
+  const reportDayKey = getPeriodKey(
+    `${String(referenceDate.getDate()).padStart(2, "0")}/${String(
+      referenceDate.getMonth() + 1
+    ).padStart(2, "0")}/${referenceDate.getFullYear()}`
+  ).day;
+
+  const todayIssues = issuesWithLiveTime.filter(
+    (issue) => getPeriodKey(issue.date).day === reportDayKey
+  );
 
   const totalTodaySeconds = todayIssues.reduce(
     (acc, issue) => acc + issue.displaySeconds,
@@ -410,8 +461,6 @@ export default function Page() {
   const allRetests = issuesWithLiveTime.filter(
     (issue) => issue.type === "Reteste"
   );
-
-  const referenceDate = new Date();
 
   const testStats = {
     day: {
@@ -492,7 +541,13 @@ export default function Page() {
           </div>
 
           <div className="topbar-badges">
-            <span className="topbar-badge">{today}</span>
+            <input
+              type="date"
+              value={toDateInputValue(reportDate)}
+              onChange={(e) => handleReportDateChange(e.target.value)}
+              className="field report-date-field"
+              title="Data de referência do relatório"
+            />
             <span className="topbar-badge topbar-badge-strong">QA Timer</span>
           </div>
         </div>
@@ -640,6 +695,7 @@ export default function Page() {
                           onClick={() => handleStart(issue.id)}
                           className="btn btn-start"
                           title="Iniciar"
+                          disabled={issue.status === "Em andamento"}
                         >
                           ▶
                         </button>
@@ -648,6 +704,7 @@ export default function Page() {
                           onClick={() => handlePause(issue.id)}
                           className="btn btn-pause"
                           title="Pausar"
+                          disabled={issue.status !== "Em andamento"}
                         >
                           ⏸
                         </button>
