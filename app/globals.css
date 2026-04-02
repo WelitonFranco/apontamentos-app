@@ -126,6 +126,11 @@ body {
   cursor: pointer;
 }
 
+.btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
 .btn-primary {
   background: #2f6f4f;
   color: white;
@@ -214,6 +219,12 @@ body {
 .issue-title-line {
   font-weight: bold;
   font-size: 14px;
+}
+
+.issue-text-strong {
+  font-size: 14px;
+  font-weight: 700;
+  color: #1f2937;
 }
 
 .issue-link {
