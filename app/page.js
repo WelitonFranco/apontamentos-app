@@ -402,13 +402,7 @@ export default function Page() {
     setEditingTimeValue("");
   }
 
-  function handleReportDateChange(value) {
-    const nextDate = new Date(`${value}T00:00:00`);
-    if (Number.isNaN(nextDate.getTime())) return;
-
-    setReportDate(nextDate);
-    setDate(toBrDate(nextDate));
-  }
+  const referenceDate = new Date();
 
   const activeIssues = issuesWithLiveTime.filter(
     (issue) => issue.status !== "Encerrada"
